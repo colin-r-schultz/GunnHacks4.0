@@ -70,15 +70,19 @@ class Bot:
 
 		min_danger = 2
 		least_danger = None
+		openset = set()
+		flagset = set()
 		for region in region_set:
 			if region.danger() == 0:
-				return region.pick_one(), False
-			if region.danger() == 1:
-				return region.pick_one(), True
-			if region.danger() < min_danger:
+				openset = openset.union(region.coords)
+			elif region.danger() == 1:
+				flagset = flagset.union(region.coords)
+			elif region.danger() < min_danger:
 				min_danger = region.danger()
 				least_danger = region
-		return least_danger.pick_one(), False
+		if len(openset) == len(flagset) == 0:
+			openset.add(least_danger.pick_one())
+		return openset, flagset
 
 	def get_neighbors(self, coord, w, h):
 		x, y = coord
@@ -111,22 +115,20 @@ class Bot:
 			if not region.is_empty():
 				self.add_to_region_set(region_set, region)
 
-game = Interface()
-game.open()
-bot = Bot()
 
+game = Interface()
+bot = Bot()
 while True:
 	state = 0
-	move = 0
 	while state == 0:
-		coord, flag = bot.play(*game.get_bot_obs())
-		if flag:
+		reveal_board, num_board, flag_board, flags_left = game.get_bot_obs()
+		openset, flagset = bot.play(reveal_board, num_board, flag_board, flags_left)
+		for coord in flagset:
 			game.flag(coord)
-		else:
+		for coord in openset:
 			state = game.reveal(coord)
-		move += 1
+			if state == -1:
+				break
 
-	print(state, move)
-	if state == -1 and move > 3:
-		print(game.num_board)
+	print(state)
 	game.reset()

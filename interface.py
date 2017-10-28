@@ -6,10 +6,6 @@ import numpy as np
 
 class Interface:
 	def __init__(self):
-		self.driver = None
-		self.actions = None
-
-	def open(self):
 		self.driver = webdriver.Firefox()
 		self.actions = ActionChains(self.driver)
 		self.driver.get('http://minesweeperonline.com/')
@@ -17,6 +13,7 @@ class Interface:
 	def reset(self):
 		self.actions.click(self.driver.find_element_by_id('face'))
 		self.actions.perform()
+		self.actions.reset_actions()
 		time.sleep(.5)
 
 	def reveal(self, coord):
@@ -24,8 +21,9 @@ class Interface:
 		x += 1
 		y += 1
 		elem = self.driver.find_element_by_id('{}_{}'.format(y, x))
-		self.actions.click(elem)
-		self.actions.perform()
+		actions = ActionChains(self.driver)
+		actions.click(elem)
+		actions.perform()
 		elem = self.driver.find_element_by_id('face')
 		if elem.get_attribute('class') == 'facedead':
 			return -1
@@ -38,8 +36,9 @@ class Interface:
 		x += 1
 		y += 1
 		elem = self.driver.find_element_by_id('{}_{}'.format(y, x))
-		self.actions.context_click(elem)
-		self.actions.perform()
+		actions = ActionChains(self.driver)
+		actions.context_click(elem)
+		actions.perform()
 
 	def close(self):
 		self.driver.close()
@@ -86,3 +85,9 @@ class Interface:
 
 		return revealed_board, num_board, flag_board, flags_left
 
+# inter = Interface()
+# inter.open()
+# while True:
+# 	input()
+# 	for i in inter.get_bot_obs():
+# 		print(i)
