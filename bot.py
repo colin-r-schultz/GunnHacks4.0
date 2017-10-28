@@ -2,16 +2,21 @@ import numpy as np
 import random
 from minesweeper import MineSweeperGame
 from interface import Interface
+import time
 
 class Region:
 	def __init__(self, coord_set, num_bombs):
 		self.coords = coord_set
 		self.num_bombs = num_bombs
+		self.size = len(self.coords)
 
 	def is_empty(self):
 		return len(self.coords) == 0
 
 	def fully_contains(self, region):
+		if region.size > self.size:
+			return False
+
 		for coord in region.coords:
 			if coord not in self.coords:
 				return False
@@ -23,6 +28,8 @@ class Region:
 			self.coords.remove(coord)
 
 		self.num_bombs -= region.num_bombs
+
+		self.size = len(self.coords)
 
 	def danger(self):
 		return self.num_bombs/len(self.coords)
@@ -68,20 +75,19 @@ class Bot:
 
 					self.add_to_region_set(region_set, Region(new_neighbors, num - flags))
 
-		min_danger = 2
-		least_danger = None
+		smallest_region = None
 		openset = set()
 		flagset = set()
 		for region in region_set:
-			if region.danger() == 0:
+			if region.num_bombs == 0:
 				openset = openset.union(region.coords)
-			elif region.danger() == 1:
+			elif region.num_bombs == region.size:
 				flagset = flagset.union(region.coords)
-			elif region.danger() < min_danger:
-				min_danger = region.danger()
-				least_danger = region
+			elif smallest_region is None or region.size < smallest_region.size:
+				smallest_region = region
 		if len(openset) == len(flagset) == 0:
-			openset.add(least_danger.pick_one())
+			openset.add(smallest_region.pick_one())
+
 		return openset, flagset
 
 	def get_neighbors(self, coord, w, h):
@@ -106,6 +112,9 @@ class Bot:
 			if old_region.fully_contains(region):
 				old_region.remove(region)
 				invalid.add(old_region)
+			elif region.fully_contains(old_region):
+				region.remove(old_region)
+				invalid.add(region)
 
 		region_set.add(region)
 
@@ -118,17 +127,26 @@ class Bot:
 
 game = Interface()
 bot = Bot()
+print('Press enter to begin')
+input()
+print('Starting bot...')
 while True:
 	state = 0
 	while state == 0:
+		# start = time.time()
 		reveal_board, num_board, flag_board, flags_left = game.get_bot_obs()
+		# print('Getting observations took {} seconds'.format(time.time()-start))
+		# start = time.time()
 		openset, flagset = bot.play(reveal_board, num_board, flag_board, flags_left)
+		# print('Choosing move(s) took {} seconds'.format(time.time()-start))
+		# start = time.time()
 		for coord in flagset:
 			game.flag(coord)
 		for coord in openset:
 			state = game.reveal(coord)
 			if state == -1:
 				break
+		# print('Performing moves took {} seconds\n'.format(time.time()-start))
 
-	print(state)
+	print('Win' if state == 1 else 'Lose')
 	game.reset()

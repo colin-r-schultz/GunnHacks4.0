@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class MineSweeperGame:
 	def __init__(self, w, h, num_bombs):
 		self.width = w
