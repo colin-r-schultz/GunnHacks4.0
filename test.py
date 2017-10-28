@@ -28,28 +28,13 @@ while True:
 
 start = time.time()
 
-revealed_board = np.zeros((w, h), dtype=np.int32)
-num_board = np.full((w, h), -1, dtype=np.int32)
-flag_board = np.zeros((w, h), dtype=np.int32)
-
-for x in range(w):
-	for y in range(h):
-		status = driver.find_element_by_id('{}_{}'.format(y + 1, x + 1)).get_attribute('class')
-		if status == 'square bombflagged':
-			flag_board[x, y] = 1
-		elif status != 'square blank':
-			revealed_board[x, y] = 1
-			num_board[x, y] = status[11]
-
-print('Old method took {} seconds'.format(time.time()-start))
-
-start = time.time()
-
 revealed_board2 = np.zeros((w, h), dtype=np.int32)
 num_board2 = np.full((w, h), -1, dtype=np.int32)
 flag_board2 = np.zeros((w, h), dtype=np.int32)
 
 html = driver.find_element_by_id('game').get_attribute('innerHTML')
+print(html)
+exit()
 
 for x in range(w):
 	for y in range(h):

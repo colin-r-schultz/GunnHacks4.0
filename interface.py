@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.alert import Alert
+from selenium.common.exceptions import NoSuchElementException, UnexpectedAlertPresentException
 import time
 import numpy as np
 
@@ -23,7 +24,11 @@ class Interface:
 		actions = ActionChains(self.driver)
 		actions.click(elem)
 		actions.perform()
-		elem = self.driver.find_element_by_id('face')
+		try:
+			elem = self.driver.find_element_by_id('face')
+		except UnexpectedAlertPresentException:
+			Alert(self.driver).dismiss()
+			elem = self.driver.find_element_by_id('face')
 		if elem.get_attribute('class') == 'facedead':
 			return -1
 		if elem.get_attribute('class') == 'facewin':
@@ -45,13 +50,10 @@ class Interface:
 	def get_bot_obs(self):
 
 		# start = time.time()
-		flags_left = 0
-		elem = self.driver.find_element_by_id('mines_hundreds')
-		flags_left += 100 * int(elem.get_attribute('class')[4])
-		elem = self.driver.find_element_by_id('mines_tens')
-		flags_left += 10 * int(elem.get_attribute('class')[4])
-		elem = self.driver.find_element_by_id('mines_ones')
-		flags_left += int(elem.get_attribute('class')[4])
+		html = self.driver.find_element_by_id('game').get_attribute('innerHTML')
+
+		flags_left = 100 * int(html[html.find('mines_hundreds')-7]) + 10 * int(html[html.find('mines_tens')-7]) \
+			+ int(html[html.find('mines_ones')-7])
 
 		# print('Getting flag number took {} seconds'.format(time.time()-start))
 		# start = time.time()
@@ -80,8 +82,6 @@ class Interface:
 		revealed_board = np.zeros((w, h), dtype=np.int32)
 		num_board = np.full((w, h), -1, dtype=np.int32)
 		flag_board = np.zeros((w, h), dtype=np.int32)
-
-		html = self.driver.find_element_by_id('game').get_attribute('innerHTML')
 
 		for x in range(w):
 			for y in range(h):

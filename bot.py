@@ -144,7 +144,7 @@ while True:
 			game.flag(coord)
 		for coord in openset:
 			state = game.reveal(coord)
-			if state == -1:
+			if state != 0:
 				break
 		# print('Performing moves took {} seconds\n'.format(time.time()-start))
 
