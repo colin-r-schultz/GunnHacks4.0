@@ -81,14 +81,5 @@ class MineSweeperGame:
 
 		return coords
 
-
-# game = MineSweeperGame(10, 10, 4)
-#
-# state = 0
-# while state != 1:
-# 	print(game.num_board)
-# 	print(game.bomb_board)
-# 	x = int(input())
-# 	y = int(input())
-# 	state = game.reveal((x, y))
-# 	print(state)
+	def get_bot_obs(self):
+		return self.revealed_board, self.num_board, self.flag_board, self.flags_left
