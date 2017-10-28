@@ -1,8 +1,6 @@
-import numpy as np
 import random
 from minesweeper import MineSweeperGame
 from interface import Interface
-import time
 
 class Region:
 	def __init__(self, coord_set, num_bombs):
